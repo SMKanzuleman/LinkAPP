@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Chat - VIVA Study Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chosen Palette: Calm Harmony (Warm Neutrals + Soft Blue/Green) -->
+    <!-- Application Structure Plan: 
+         - Dashboard Layout: Sidebar for navigation, main content area for focus.
+         - Sections:
+           1. Overview: High-level architecture stats (Chart.js).
+           2. Data Journey: Interactive stepper visualizing the Client -> Server -> DB flow (XOR/Base64).
+           3. Network Lab: Interactive tool to demonstrate the 10-byte header concept.
+           4. Nano Concepts: Simple flashcards for definitions.
+         - Rationale: Designed to break down complex backend flows into visual, interactive steps for easy VIVA explanation.
+    -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F5F5F0;
+            color: #333;
+        }
+
+        .nav-item.active {
+            background-color: #E2E8F0;
+            color: #1E293B;
+            border-right: 4px solid #38BDF8;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .step-active {
+            border-color: #38BDF8;
+            background-color: #F0F9FF;
+        }
+
+        .step-inactive {
+            opacity: 0.5;
+        }
+
+        /* Chart Container Styling Rules */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+
+<body class="h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col z-10">
+        <div class="p-6 border-b border-gray-100">
+            <h1 class="text-2xl font-bold text-slate-800">🔒 Secure Chat</h1>
+            <p class="text-xs text-slate-500 mt-1">VIVA Preparation Tool</p>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <button onclick="navigate('overview')" id="nav-overview"
+                class="nav-item active w-full text-left px-6 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3">
+                <span>📊</span> Overview
+            </button>
+            <button onclick="navigate('journey')" id="nav-journey"
+                class="nav-item w-full text-left px-6 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3">
+                <span>🚀</span> Data Journey
+            </button>
+            <button onclick="navigate('network')" id="nav-network"
+                class="nav-item w-full text-left px-6 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3">
+                <span>🌐</span> The 10-Byte Header
+            </button>
+            <button onclick="navigate('concepts')" id="nav-concepts"
+                class="nav-item w-full text-left px-6 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3">
+                <span>💡</span> Nano Concepts
+            </button>
+        </nav>
+        <div class="p-4 bg-slate-50 border-t border-gray-200">
+            <p class="text-xs text-slate-400">Ready for strict VIVA?</p>
+            <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                <div class="bg-green-400 h-1.5 rounded-full" style="width: 85%"></div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8 relative">
+
+        <!-- Section: Overview -->
+        <section id="view-overview" class="space-y-6">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">System Architecture</h2>
+                <p class="text-slate-500 mt-2 max-w-2xl">
+                    Welcome to your study dashboard. This section breaks down the core technologies of your Python Chat
+                    Application (`server.py` & `client.py`). Use this to explain the "Big Picture" to your examiner.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="card p-6 border-l-4 border-blue-400">
+                    <h3 class="font-bold text-slate-700">Communication</h3>
+                    <p class="text-3xl font-bold text-blue-500 mt-2">TCP & UDP</p>
+                    <p class="text-sm text-slate-400 mt-1">Hybrid Protocol</p>
+                </div>
+                <div class="card p-6 border-l-4 border-green-400">
+                    <h3 class="font-bold text-slate-700">Storage</h3>
+                    <p class="text-3xl font-bold text-green-500 mt-2">SQLite3</p>
+                    <p class="text-sm text-slate-400 mt-1">Persistent & Encrypted</p>
+                </div>
+                <div class="card p-6 border-l-4 border-purple-400">
+                    <h3 class="font-bold text-slate-700">Security</h3>
+                    <p class="text-3xl font-bold text-purple-500 mt-2">XOR + SHA</p>
+                    <p class="text-sm text-slate-400 mt-1">Encryption & Hashing</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Chart: Protocol Breakdown -->
+                <!-- Visualization Choice: Pie Chart to show the separation of concerns between Media (UDP) and Control (TCP). -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-slate-700 mb-4">Traffic Type Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-400 mt-4">TCP handles reliability (Login/Text), UDP handles
+                        speed (Voice/Video).</p>
+                </div>
+
+                <!-- Chart: Security Layers -->
+                <!-- Visualization Choice: Bar Chart to visualize the "depth" of security processing. -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-bold text-slate-700 mb-4">Processing Time per Message</h3>
+                    <div class="chart-container">
+                        <canvas id="securityChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-400 mt-4">Most time is spent on Network I/O, Encryption is
+                        fast.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Data Journey (The Flow) -->
+        <section id="view-journey" class="hidden space-y-6">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">The Data Journey</h2>
+                <p class="text-slate-500 mt-2">
+                    Click "Next Step" to trace a text message from your Client to the Database. This interactive flow
+                    answers the question:
+                    <span class="font-semibold text-slate-700">"How is my data secured?"</span>
+                </p>
+            </div>
+
+            <!-- Interactive Controller -->
+            <div class="card p-6 mb-6 flex justify-between items-center sticky top-0 z-20 bg-white/90 backdrop-blur">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Current Stage</span>
+                    <h3 id="journey-stage-title" class="text-xl font-bold text-blue-600">1. Client Input</h3>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="resetJourney()"
+                        class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700">Reset</button>
+                    <button onclick="nextJourneyStep()"
+                        class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg shadow transition-transform active:scale-95">Next
+                        Step →</button>
+                </div>
+            </div>
+
+            <!-- Flow Visualizer -->
+            <div class="space-y-4 relative">
+                <!-- Step 1 -->
+                <div id="step-1"
+                    class="journey-step card p-6 border-2 border-transparent transition-all duration-300 step-active">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-2xl">👤
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-lg">Client Sends Message</h4>
+                            <p class="text-sm text-slate-500 mb-2">User types a message in <code
+                                    class="bg-gray-100 px-1 rounded">client.py</code></p>
+                            <div class="bg-slate-800 text-green-400 font-mono p-3 rounded text-sm">
+                                msg = "Hello World"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div id="step-2"
+                    class="journey-step card p-6 border-2 border-transparent transition-all duration-300 step-inactive">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-2xl">📦
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-lg">JSON Formatting</h4>
+                            <p class="text-sm text-slate-500 mb-2">Data is packaged into a standard format.</p>
+                            <div class="bg-slate-800 text-green-400 font-mono p-3 rounded text-sm">
+                                {"type": "private", "content": "Hello World"}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div id="step-3"
+                    class="journey-step card p-6 border-2 border-transparent transition-all duration-300 step-inactive">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-2xl">🔒
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-lg">Server Encrypts (XOR)</h4>
+                            <p class="text-sm text-slate-500 mb-2">Server receives JSON, extracts content, and applies
+                                <code class="bg-gray-100 px-1 rounded">encrypt_data()</code>.</p>
+                            <div class="bg-slate-800 text-red-400 font-mono p-3 rounded text-sm">
+                                Result: \x12\x05\x88\x91 (Raw Binary Bytes)
+                            </div>
+                            <p class="text-xs text-red-500 mt-1">⚠️ Danger: Cannot save these bytes to Text DB!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div id="step-4"
+                    class="journey-step card p-6 border-2 border-transparent transition-all duration-300 step-inactive">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-2xl">📝
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-lg">Base64 Encoding</h4>
+                            <p class="text-sm text-slate-500 mb-2">The binary is translated into safe text using <code
+                                    class="bg-gray-100 px-1 rounded">base64.b64encode()</code>.</p>
+                            <div class="bg-slate-800 text-blue-300 font-mono p-3 rounded text-sm">
+                                Result: "SGVsbG8gV29ybGQ="
+                            </div>
+                            <p class="text-xs text-green-600 mt-1">✅ Safe: This is just text letters.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div id="step-5"
+                    class="journey-step card p-6 border-2 border-transparent transition-all duration-300 step-inactive">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-2xl">💾
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-lg">Database Storage</h4>
+                            <p class="text-sm text-slate-500 mb-2">Saved to <code
+                                    class="bg-gray-100 px-1 rounded">chat.db</code> via SQLite.</p>
+                            <div class="bg-white border border-gray-200 p-3 rounded text-sm text-slate-600">
+                                ┌── id ──┬── content ──────────┐<br>
+                                │ 101 │ "SGVsbG8gV29ybGQ=" │<br>
+                                └────────┴─────────────────────┘
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Network Lab (Header) -->
+        <section id="view-network" class="hidden space-y-6">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">The 10-Byte Header</h2>
+                <p class="text-slate-500 mt-2">
+                    Why do we need <code class="bg-gray-200 px-1 rounded text-sm">HEADER_LENGTH = 10</code>? TCP is a
+                    stream. The header tells the receiver when to stop reading.
+                </p>
+            </div>
+
+            <div class="card p-8 bg-slate-900 text-white">
+                <h3 class="text-xl font-bold mb-6">Packet Simulator</h3>
+
+                <div class="mb-6">
+                    <label class="block text-sm text-slate-400 mb-2">Type a message to send:</label>
+                    <input type="text" id="header-input" placeholder="Type here..." oninput="updateHeaderVisual()"
+                        class="w-full bg-slate-800 border border-slate-700 rounded p-3 text-white focus:outline-none focus:border-blue-500 transition-colors">
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-stretch font-mono">
+                    <!-- Header Visual -->
+                    <div class="flex-1 bg-blue-900/30 border border-blue-500/50 rounded p-4 relative group">
+                        <span class="absolute -top-3 left-4 bg-slate-900 px-2 text-xs text-blue-400">HEADER (Fixed 10
+                            Bytes)</span>
+                        <div id="visual-header"
+                            class="text-3xl font-bold text-blue-400 text-center tracking-widest break-all">
+                            10
+                        </div>
+                        <p class="text-xs text-center text-slate-500 mt-2">Contains Length</p>
+                    </div>
+
+                    <!-- Payload Visual -->
+                    <div class="flex-[2] bg-green-900/30 border border-green-500/50 rounded p-4 relative">
+                        <span class="absolute -top-3 left-4 bg-slate-900 px-2 text-xs text-green-400">PAYLOAD
+                            (Variable)</span>
+                        <div id="visual-payload" class="text-xl text-green-400 break-all">
+                            Type above...
+                        </div>
+                        <p class="text-xs text-center text-slate-500 mt-2">Actual JSON Data</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-4 bg-slate-800 rounded text-sm text-slate-300">
+                    <p class="font-bold text-yellow-400 mb-1">How it works:</p>
+                    <p>1. Length of payload is calculated: <span id="calc-len">0</span> bytes.</p>
+                    <p>2. Length is formatted to 10 chars: <span class="font-mono bg-slate-900 px-1" id="calc-header">"0
+                            "</span>.</p>
+                    <p>3. Sent together: Header + Payload.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Nano Concepts -->
+        <section id="view-concepts" class="hidden space-y-6">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">Nano Banana Concepts</h2>
+                <p class="text-slate-500 mt-2">Simple, one-sentence answers for your VIVA.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card 1 -->
+                <div class="card p-6 hover:shadow-lg transition-shadow border-t-4 border-yellow-400">
+                    <h3 class="font-bold text-lg mb-2">Why JSON?</h3>
+                    <p class="text-slate-600">"It's the envelope. It converts Python dictionaries into a standard text
+                        string so we can send it over the network."</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card p-6 hover:shadow-lg transition-shadow border-t-4 border-blue-400">
+                    <h3 class="font-bold text-lg mb-2">Why Base64?</h3>
+                    <p class="text-slate-600">"It's the translator. It turns unsafe binary data (like encrypted text or
+                        images) into safe text characters for the database."</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="card p-6 hover:shadow-lg transition-shadow border-t-4 border-red-400">
+                    <h3 class="font-bold text-lg mb-2">Why Threading?</h3>
+                    <p class="text-slate-600">"To multitask. It allows the server to talk to User A and User B at the
+                        exact same time without freezing."</p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="card p-6 hover:shadow-lg transition-shadow border-t-4 border-purple-400">
+                    <h3 class="font-bold text-lg mb-2">Why UDP for Video?</h3>
+                    <p class="text-slate-600">"Speed over perfection. UDP doesn't double-check every packet, making it
+                        fast enough for real-time video, unlike TCP."</p>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="card p-6 hover:shadow-lg transition-shadow border-t-4 border-green-400">
+                    <h3 class="font-bold text-lg mb-2">XOR Encryption</h3>
+                    <p class="text-slate-600">"A simple cipher that scrambles text using a key. We use it to protect
+                        data at rest in the database."</p>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="card p-6 hover:shadow-lg transition-shadow border-t-4 border-gray-400">
+                    <h3 class="font-bold text-lg mb-2">0.0.0.0 vs 127.0.0.1</h3>
+                    <p class="text-slate-600">"127.0.0.1 is just 'me' (Localhost). 0.0.0.0 means 'listen to everyone on
+                        the network'."</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // State
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        // Navigation
+        function navigate(viewId) {
+            // Hide all sections
+            ['overview', 'journey', 'network', 'concepts'].forEach(id => {
+                document.getElementById('view-' + id).classList.add('hidden');
+                document.getElementById('nav-' + id).classList.remove('active');
+            });
+
+            // Show selected
+            document.getElementById('view-' + viewId).classList.remove('hidden');
+            document.getElementById('nav-' + viewId).classList.add('active');
+        }
+
+        // Journey Logic
+        function nextJourneyStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateJourneyUI();
+            }
+        }
+
+        function resetJourney() {
+            currentStep = 1;
+            updateJourneyUI();
+        }
+
+        function updateJourneyUI() {
+            // Update Title
+            const titles = [
+                "1. Client Input",
+                "2. JSON Formatting",
+                "3. Server Encrypts (XOR)",
+                "4. Base64 Encoding",
+                "5. Database Storage"
+            ];
+            document.getElementById('journey-stage-title').innerText = titles[currentStep - 1];
+
+            // Update Steps Visibility/Style
+            for (let i = 1; i <= totalSteps; i++) {
+                const el = document.getElementById('step-' + i);
+                if (i === currentStep) {
+                    el.classList.remove('step-inactive');
+                    el.classList.add('step-active');
+                    // Scroll into view
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (i < currentStep) {
+                    el.classList.remove('step-active');
+                    el.classList.remove('step-inactive'); // Passed steps are fully visible but normal
+                    el.style.opacity = "0.7";
+                    el.style.backgroundColor = "white";
+                } else {
+                    el.classList.add('step-inactive');
+                    el.classList.remove('step-active');
+                    el.style.backgroundColor = "white";
+                    el.style.opacity = "0.4";
+                }
+            }
+        }
+
+        // Header Visualizer Logic
+        function updateHeaderVisual() {
+            const input = document.getElementById('header-input').value || " ";
+            const payload = JSON.stringify({ type: "msg", data: input });
+            const len = payload.length;
+
+            // Format header: 10 chars, left justified
+            const header = len.toString().padEnd(10, ' ');
+
+            // Update UI
+            document.getElementById('visual-header').innerText = header.replace(/ /g, '·'); // Use dots for visibility
+            document.getElementById('visual-payload').innerText = payload;
+            document.getElementById('calc-len').innerText = len;
+            document.getElementById('calc-header').innerText = `"${header}"`;
+        }
+
+        // Chart Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            // Traffic Chart
+            const ctx1 = document.getElementById('trafficChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['TCP (Reliable)', 'UDP (Fast)'],
+                    datasets: [{
+                        data: [30, 70], // Hypothetical split: Chat vs Video
+                        backgroundColor: ['#3B82F6', '#10B981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Security Chart
+            const ctx2 = document.getElementById('securityChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Network I/O', 'JSON Parse', 'XOR Encrypt', 'Base64 Encode', 'DB Write'],
+                    datasets: [{
+                        label: 'Time (microseconds)',
+                        data: [1500, 200, 50, 20, 500],
+                        backgroundColor: '#6366F1',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Initialize visualizer
+            updateHeaderVisual();
+        });
+
+    </script>
+</body>
+
+</html>
